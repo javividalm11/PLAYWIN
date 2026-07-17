@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+/* ═══════════════════ PLAYWIN Design Tokens ═══════════════════
+   Extraídos de assets/logo.png: negro carbón + verde lima + plata
+   Look: "trading terminal deportivo", tema oscuro nativo.        */
+
+@theme {
+  /* Fondos (escala "pitch" — verde-negro carbón) */
+  --color-pitch-950: #080a08;
+  --color-pitch-900: #0d0f0d;
+  --color-pitch-850: #111511;
+  --color-pitch-800: #161b16;
+  --color-pitch-700: #1e241e;
+  --color-pitch-600: #2a332a;
+  --color-pitch-500: #3c473c;
+
+  /* Verde marca (gradiente del logo #A4E100 → #5E9400) */
+  --color-brand-300: #c9ef75;
+  --color-brand-400: #a4e100;
+  --color-brand-500: #8cc63e;
+  --color-brand-600: #6faa2a;
+  --color-brand-700: #5e9400;
+  --color-brand-800: #3f6600;
+  --color-brand-900: #2a4400;
+
+  /* Plata / grises metálicos del logo */
+  --color-silver-100: #f4f5f6;
+  --color-silver-200: #e8e9eb;
+  --color-silver-300: #d2d6da;
+  --color-silver-400: #b7bcc2;
+  --color-silver-500: #8f969e;
+  --color-silver-600: #6a7178;
+
+  /* Semáforo de confianza */
+  --color-risk-500: #e05252;
+  --color-risk-600: #c23b3b;
+  --color-warn-400: #f0c95c;
+  --color-warn-500: #e8b93e;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --animate-live-pulse: live-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-fade-up: fade-up 0.5s ease-out both;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(164, 225, 0, 0.55);
+  }
+  50% {
+    opacity: 0.85;
+    box-shadow: 0 0 0 6px rgba(164, 225, 0, 0);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-pitch-900);
+  color: var(--color-silver-200);
+  font-family: var(--font-sans);
+  /* textura sutil de fondo, eco del logo */
+  background-image: radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      rgba(140, 198, 62, 0.06),
+      transparent
+    ),
+    radial-gradient(ellipse 60% 40% at 90% 110%, rgba(140, 198, 62, 0.04), transparent);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--color-brand-700);
+  color: white;
+}
+
+/* Scrollbar acorde al tema */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-pitch-600) transparent;
+}
+
+/* Utilidades de marca */
+@utility text-gradient-brand {
+  background: linear-gradient(100deg, #e8e9eb 15%, #a4e100 55%, #5e9400 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility card-surface {
+  background: linear-gradient(180deg, var(--color-pitch-800), var(--color-pitch-850));
+  border: 1px solid var(--color-pitch-600);
+  border-radius: var(--radius-xl);
+}
+
+@utility glow-brand {
+  box-shadow: 0 0 24px -6px rgba(164, 225, 0, 0.35);
+}

@@ -1,0 +1,12 @@
+# Configuración local de Claude Code (rutas de máquina)
+.claude/
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Nunca subir llaves
+*.env
+.env*
+!**/.env.example
