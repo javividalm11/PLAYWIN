@@ -4,13 +4,17 @@ import { createServerClient } from "@supabase/ssr";
 const FP_COOKIE = "pw_fp";
 
 /**
- * Proxy (antes middleware):
+ * Middleware (edge):
  *  1. Siembra la cookie de fingerprint `pw_fp` (uuid) en la primera visita —
  *     combinada con la IP alimenta el trial gating.
  *  2. Refresca el token de sesión de Supabase para que los Server
  *     Components siempre vean una sesión válida.
+ *
+ * Nota: Next 16 renombró middleware → proxy (runtime Node), pero Cloudflare
+ * (OpenNext) requiere edge middleware, así que usamos la forma clásica.
+ * Todo el código aquí es edge-compatible.
  */
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   // ── 1. Fingerprint cookie ──

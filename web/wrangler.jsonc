@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "playwin",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "kv_namespaces": [
+    {
+      // Caché incremental ISR de OpenNext (namespace "playwin_cache")
+      "binding": "NEXT_INC_CACHE_KV",
+      "id": "bd7ea704665e4271b10730622c1315b9"
+    }
+  ]
+  // Variables de entorno: se configuran como secrets con
+  //   npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY   (etc.)
+  // y las NEXT_PUBLIC_* van en "vars" o quedan inline en el build.
+}
