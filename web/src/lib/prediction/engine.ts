@@ -15,12 +15,19 @@
  */
 import type { MatchDetail, FormGame } from "@/lib/data/espn";
 import type { MatchWeather } from "@/lib/data/weather";
-import type { Prediction, PredictionFactor, Confidence, PickCode } from "@/lib/types";
+import type {
+  Prediction,
+  PredictionFactor,
+  Confidence,
+  PickCode,
+  SimplePickCode,
+} from "@/lib/types";
 import {
   scoreMatrix,
   outcomes,
   overProb,
   bttsProb,
+  comboProb,
   americanToProb,
   devig,
   type Outcomes,
@@ -206,6 +213,7 @@ export function buildPrediction(detail: MatchDetail, weather: MatchWeather | nul
   /* ── 6. Selección del pick ── */
   type Candidate = { market: string; selection: string; p: number; code: PickCode };
   const candidates: Candidate[] = [];
+  let valuePick: Prediction["valuePick"];
   const best1x2 = Math.max(probs.home, probs.draw, probs.away);
 
   if (probs.home === best1x2)
@@ -298,24 +306,82 @@ export function buildPrediction(detail: MatchDetail, weather: MatchWeather | nul
         code: { type: "ou", side: "over", line: 0.5 },
       },
     ];
+
+    // ── Combinadas del mismo partido (probabilidad EXACTA por matriz) ──
+    // Mejoran el momio del tier seguro: DC favorito + O1.5 paga ~1.15-1.25
+    // frente al ~1.05 de un under 5.5, con probabilidad similar.
+    const dcHomeP = probs.home + probs.draw;
+    const dcAwayP = probs.away + probs.draw;
+    const dcSide: "1x" | "x2" = dcHomeP >= dcAwayP ? "1x" : "x2";
+    const dcTeam = dcSide === "1x" ? match.home.name : match.away.name;
+    const dcLeg = { type: "dc", side: dcSide } as SimplePickCode;
+
+    extras.push(
+      {
+        market: "Combinada",
+        selection: `${dcTeam} o empate + Más de 1.5 goles`,
+        p: comboProb(matrix, dcSide, 2, null),
+        code: { type: "combo", legs: [dcLeg, { type: "ou", side: "over", line: 1.5 }] },
+      },
+      {
+        market: "Combinada",
+        selection: `${dcTeam} o empate + Menos de 4.5 goles`,
+        p: comboProb(matrix, dcSide, null, 4),
+        code: { type: "combo", legs: [dcLeg, { type: "ou", side: "under", line: 4.5 }] },
+      },
+      {
+        market: "Combinada",
+        selection: `${probs.home >= probs.away ? match.home.name : match.away.name} gana + Más de 1.5 goles`,
+        p: comboProb(matrix, probs.home >= probs.away ? "home" : "away", 2, null),
+        code: {
+          type: "combo",
+          legs: [
+            { type: "1x2", side: probs.home >= probs.away ? "home" : "away" },
+            { type: "ou", side: "over", line: 1.5 },
+          ],
+        },
+      },
+    );
+
+    // ⚠️ Combinadas EXCLUIDAS del tier seguro: backtest 25% real (n=4) vs 85%+
+    // reclamado. Poisson independiente subestima los marcadores bajos del
+    // favorito (1-0, 0-0) → "DC + Over 1.5" se infla. Volverán al tier cuando
+    // el modelo tenga corrección Dixon-Coles y re-aprueben el backtest.
     for (const c of extras) {
-      if (c.p >= 0.85) candidates.push(c);
+      if (c.p >= 0.85 && c.market !== "Combinada") candidates.push(c);
+    }
+
+    // ── Pick de Valor (para buscadores de momio; NO entra al tier seguro) ──
+    // Solo mercados calibrados (el bucket 60-75% del backtest rinde ~68-74%).
+    const valuePool = [...candidates, ...extras].filter(
+      (c) => c.p >= 0.58 && c.p <= 0.74 && c.market !== "Combinada",
+    );
+    if (valuePool.length > 0) {
+      const vp = valuePool.sort((a, b) => b.p - a.p)[0];
+      valuePick = {
+        market: vp.market,
+        selection: vp.selection,
+        probability: Math.round(vp.p * 100),
+        fairOdds: Math.round((1 / vp.p) * 100) / 100,
+      };
     }
   }
 
   // Selección del pick (calibrada con backtest de 241 partidos):
   //  1. Certeza extrema (≥85%) → tier "seguro". Entre varios seguros se
-  //     prefiere el mercado más específico (DC > unders altos > equipo anota
-  //     > over 0.5) para no llenar la página de picks triviales.
+  //     prefiere el mercado con MEJOR MOMIO a igual seguridad: combinadas
+  //     primero (pagan 1.15-1.30), luego DC, y los unders triviales al final
+  //     (pagan ~1.05 y el apostador no los toma).
   //  2. Si el 1X2 es contundente (≥55%) → 1X2 (mejor valor).
   //  3. Si no → la alternativa más probable.
   const SAFE_PRIORITY: Record<string, number> = {
-    "Doble oportunidad": 0,
-    "Menos de 4.5 goles": 1,
-    "Menos de 5.5 goles": 2,
-    "Goles en el partido": 3,
-    "Over/Under": 1,
-    "1X2": 0,
+    Combinada: 0,
+    "Doble oportunidad": 1,
+    "Menos de 4.5 goles": 2,
+    "Menos de 5.5 goles": 3,
+    "Goles en el partido": 4,
+    "Over/Under": 2,
+    "1X2": 1,
   };
   let pick: Candidate;
   const safeCands = candidates
@@ -344,7 +410,9 @@ export function buildPrediction(detail: MatchDetail, weather: MatchWeather | nul
       // Techo del 96%: en fútbol nada es 100%, y mostrarlo destruye credibilidad
       probability: Math.round(Math.min(pick.p, 0.96) * 100),
       code: pick.code,
+      fairOdds: Math.round((1 / Math.min(pick.p, 0.96)) * 100) / 100,
     },
+    valuePick,
     factors: factors.sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact)),
     summary: "",
     generatedAt: new Date().toISOString(),

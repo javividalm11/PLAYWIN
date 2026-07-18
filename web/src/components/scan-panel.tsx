@@ -197,14 +197,43 @@ export function ScanPanel({
         {!isFinished && (
           <div className="mt-6 rounded-xl border border-brand-500/25 bg-brand-500/5 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-brand-500">
-              Pick recomendado · {prediction.pick.market}
+              {prediction.pick.probability >= 85 ? "🔒 Pick seguro" : "Pick recomendado"} ·{" "}
+              {prediction.pick.market}
             </p>
             <div className="mt-1.5 flex items-baseline justify-between gap-3">
               <p className="text-lg font-bold text-silver-100">{prediction.pick.selection}</p>
-              <span className="font-mono text-2xl font-bold text-brand-400">
+              <span className="shrink-0 font-mono text-2xl font-bold text-brand-400">
                 {prediction.pick.probability}%
               </span>
             </div>
+            {prediction.pick.fairOdds && (
+              <p className="mt-2 text-[11px] text-silver-500">
+                Momio justo ≈ <span className="font-mono font-semibold text-silver-300">{prediction.pick.fairOdds.toFixed(2)}</span>{" "}
+                — tómalo solo si la casa paga eso o más.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Pick de valor: para buscadores de momio. NO cuenta en el tier seguro. */}
+        {!isFinished && !isLive && prediction.valuePick && (
+          <div className="mt-3 rounded-xl border border-warn-500/25 bg-warn-500/5 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-warn-400">
+              ⚡ Pick de valor · {prediction.valuePick.market}
+            </p>
+            <div className="mt-1.5 flex items-baseline justify-between gap-3">
+              <p className="text-sm font-bold text-silver-200">{prediction.valuePick.selection}</p>
+              <span className="shrink-0 font-mono text-lg font-bold text-warn-400">
+                {prediction.valuePick.probability}%
+              </span>
+            </div>
+            <p className="mt-2 text-[11px] text-silver-500">
+              Momio justo ≈{" "}
+              <span className="font-mono font-semibold text-silver-300">
+                {prediction.valuePick.fairOdds.toFixed(2)}
+              </span>{" "}
+              — mayor pago, mayor riesgo. No forma parte del tier seguro.
+            </p>
           </div>
         )}
 

@@ -71,6 +71,38 @@ export function bttsProb(m: ScoreMatrix, homeScored = false, awayScored = false)
   return p / (total || 1);
 }
 
+/**
+ * Probabilidad EXACTA de una combinada resultado+goles del mismo partido,
+ * sumando las celdas de la matriz que cumplen AMBAS condiciones.
+ * (Multiplicar probabilidades sería incorrecto: los legs están correlacionados.)
+ */
+export function comboProb(
+  m: ScoreMatrix,
+  result: "home" | "away" | "1x" | "x2" | null,
+  minTotalGoals: number | null,
+  maxTotalGoals: number | null,
+): number {
+  let p = 0,
+    total = 0;
+  for (let h = 0; h <= MAX_GOALS; h++) {
+    for (let a = 0; a <= MAX_GOALS; a++) {
+      total += m[h][a];
+      const t = h + a;
+      const okResult =
+        result === null ||
+        (result === "home" && h > a) ||
+        (result === "away" && a > h) ||
+        (result === "1x" && h >= a) ||
+        (result === "x2" && a >= h);
+      const okGoals =
+        (minTotalGoals === null || t >= minTotalGoals) &&
+        (maxTotalGoals === null || t <= maxTotalGoals);
+      if (okResult && okGoals) p += m[h][a];
+    }
+  }
+  return p / (total || 1);
+}
+
 /** Cuota americana → probabilidad implícita (sin quitar el vig). */
 export function americanToProb(ml: number): number {
   return ml < 0 ? -ml / (-ml + 100) : 100 / (ml + 100);

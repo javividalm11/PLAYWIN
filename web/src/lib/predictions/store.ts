@@ -97,6 +97,12 @@ export function evaluatePick(
       const scored = code.side === "home" ? home > 0 : away > 0;
       return scored ? "won" : "lost";
     }
+    case "combo": {
+      const legs = code.legs.map((l) => evaluatePick(l, home, away));
+      if (legs.includes("lost")) return "lost";
+      if (legs.includes("void")) return "void";
+      return "won";
+    }
   }
 }
 

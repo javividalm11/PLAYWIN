@@ -41,12 +41,19 @@ export function PickCard({ match, prediction }: { match: Match; prediction: Pred
         </p>
 
         <div className="mt-4 flex items-end justify-between">
-          <p className="line-clamp-2 max-w-[75%] text-xs leading-relaxed text-silver-500">
+          <p className="line-clamp-2 max-w-[70%] text-xs leading-relaxed text-silver-500">
             {prediction.summary}
           </p>
-          <span className="font-mono text-2xl font-bold text-brand-400">
-            {prediction.pick.probability}%
-          </span>
+          <div className="text-right">
+            <span className="font-mono text-2xl font-bold text-brand-400">
+              {prediction.pick.probability}%
+            </span>
+            {prediction.pick.fairOdds && (
+              <span className="block font-mono text-[11px] text-silver-500">
+                momio ≈{prediction.pick.fairOdds.toFixed(2)}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

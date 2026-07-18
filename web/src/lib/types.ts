@@ -41,12 +41,17 @@ export type PredictionFactor = {
 export type Confidence = "alta" | "media" | "baja";
 
 /** Pick estructurado (para liquidar automáticamente contra el marcador final) */
-export type PickCode =
+export type SimplePickCode =
   | { type: "1x2"; side: "home" | "draw" | "away" }
   | { type: "dc"; side: "1x" | "x2" }
   | { type: "ou"; side: "over" | "under"; line: number }
   | { type: "btts"; side: "yes" | "no" }
   | { type: "teamgoal"; side: "home" | "away" }; // "el equipo X anota"
+
+export type PickCode =
+  | SimplePickCode
+  // Combinada del mismo partido (probabilidad EXACTA desde la matriz, no producto)
+  | { type: "combo"; legs: SimplePickCode[] };
 
 export type Prediction = {
   matchId: string;
@@ -57,6 +62,16 @@ export type Prediction = {
     confidence: Confidence;
     probability: number; // % del pick
     code?: PickCode;
+    /** Momio decimal justo (1/p): referencia de cuota mínima aceptable */
+    fairOdds?: number;
+  };
+  /** Pick secundario para buscadores de momio (60-80%, cuota 1.35+).
+   *  NO forma parte del tier seguro ni del track record principal. */
+  valuePick?: {
+    market: string;
+    selection: string;
+    probability: number;
+    fairOdds: number;
   };
   factors: PredictionFactor[];
   summary: string; // explicación en lenguaje natural
