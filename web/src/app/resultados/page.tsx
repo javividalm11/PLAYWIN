@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { settlePending, getTrackRecord, type PredictionRow, type TrackRecord } from "@/lib/predictions/store";
 
 export const metadata: Metadata = { title: "Resultados del modelo" };
@@ -182,6 +183,7 @@ export default async function ResultsPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
+      <AutoRefresh seconds={90} />
       <h1 className="text-2xl font-bold text-silver-100">📊 Resultados del modelo</h1>
       <p className="mt-1 max-w-2xl text-sm text-silver-500">
         Cada pronóstico se congela antes del kickoff y se liquida automáticamente con el

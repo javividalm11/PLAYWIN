@@ -33,14 +33,30 @@ export type BackfillResult = {
   settledNow: number;
   skippedExisting: number;
   failed: number;
+  /** true si quedaron partidos sin procesar (límite por lote alcanzado) */
+  truncated: boolean;
 };
 
-export async function backfillDay(dateYYYYMMDD?: string): Promise<BackfillResult | null> {
+/**
+ * @param maxNew Límite de partidos NUEVOS por ejecución. Cloudflare Workers
+ * permite ~50 subrequests por petición; cada partido cuesta 2-4 fetches.
+ * El cron (cada 30 min) completa la cartelera en pocas pasadas.
+ */
+export async function backfillDay(
+  dateYYYYMMDD?: string,
+  maxNew = 10,
+): Promise<BackfillResult | null> {
   const db = getAdminSupabase();
   if (!db) return null;
 
   const matches = await getScoreboard(dateYYYYMMDD);
-  const res: BackfillResult = { created: 0, settledNow: 0, skippedExisting: 0, failed: 0 };
+  const res: BackfillResult = {
+    created: 0,
+    settledNow: 0,
+    skippedExisting: 0,
+    failed: 0,
+    truncated: false,
+  };
   if (matches.length === 0) return res;
 
   // Filas ya existentes (pre-registradas honestamente): no se tocan
@@ -56,6 +72,10 @@ export async function backfillDay(dateYYYYMMDD?: string): Promise<BackfillResult
       continue;
     }
     if (m.status === "postponed") continue;
+    if (res.created >= maxNew) {
+      res.truncated = true;
+      break;
+    }
 
     try {
       const detail = await getMatchDetail(m.id);

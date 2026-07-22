@@ -109,8 +109,10 @@ export function evaluatePick(
 let lastSettleRun = 0;
 
 /** Liquida pendientes cuyos partidos ya deberían haber terminado.
- *  Con throttle para no repetir trabajo en cada carga de página. */
-export async function settlePending(): Promise<void> {
+ *  Con throttle para no repetir trabajo en cada carga de página.
+ *  limit=10 por defecto: cada partido cuesta un fetch y Cloudflare Workers
+ *  permite ~50 subrequests por petición. */
+export async function settlePending(limit = 10): Promise<void> {
   const db = getAdminSupabase();
   if (!db) return;
   if (Date.now() - lastSettleRun < 5 * 60_000) return;
@@ -122,7 +124,7 @@ export async function settlePending(): Promise<void> {
     .select("id, match_id, pick_code")
     .eq("outcome", "pending")
     .lt("kickoff", cutoff)
-    .limit(30);
+    .limit(limit);
   if (error) {
     warnMissingTable(error.message);
     return;
