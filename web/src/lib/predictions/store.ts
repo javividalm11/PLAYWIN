@@ -175,61 +175,93 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
   const db = getAdminSupabase();
   if (!db) return null;
 
-  const { data, error } = await db
-    .from("predictions")
-    .select(
-      "id, match_id, match_label, league, kickoff, market, selection, pick_code, probability, confidence, outcome, final_score",
-    )
-    .order("kickoff", { ascending: false })
-    .limit(300);
-  if (error) {
-    warnMissingTable(error.message);
+  // Conteos agregados sobre TODO el histórico (escala a cualquier volumen;
+  // antes se leían solo las 300 filas más recientes y la gráfica "olvidaba"
+  // los días anteriores cuando el cron empezó a sembrar ~65 picks diarios).
+  const head = () => db.from("predictions").select("id", { count: "exact", head: true });
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(todayStart.getTime() + 86_400_000);
+  const since14 = new Date(Date.now() - 14 * 86_400_000).toISOString();
+
+  const [
+    total,
+    won,
+    lost,
+    voided,
+    pending,
+    safeWon,
+    safeLost,
+    todayWon,
+    todayLost,
+    todayPending,
+    settled14,
+    lastSettled,
+    displayRows,
+  ] = await Promise.all([
+    head(),
+    head().eq("outcome", "won"),
+    head().eq("outcome", "lost"),
+    head().eq("outcome", "void"),
+    head().eq("outcome", "pending"),
+    head().eq("outcome", "won").gte("probability", 85),
+    head().eq("outcome", "lost").gte("probability", 85),
+    head().eq("outcome", "won").gte("kickoff", todayStart.toISOString()).lt("kickoff", todayEnd.toISOString()),
+    head().eq("outcome", "lost").gte("kickoff", todayStart.toISOString()).lt("kickoff", todayEnd.toISOString()),
+    head().eq("outcome", "pending").gte("kickoff", todayStart.toISOString()).lt("kickoff", todayEnd.toISOString()),
+    // Liquidados de los últimos 14 días para la gráfica (columnas mínimas)
+    db
+      .from("predictions")
+      .select("outcome, kickoff")
+      .in("outcome", ["won", "lost"])
+      .gte("kickoff", since14)
+      .limit(3000),
+    // Últimos liquidados para la racha
+    db
+      .from("predictions")
+      .select("outcome")
+      .in("outcome", ["won", "lost"])
+      .order("kickoff", { ascending: false })
+      .limit(60),
+    // Filas recientes para el listado visible (próximos + últimos jugados)
+    db
+      .from("predictions")
+      .select(
+        "id, match_id, match_label, league, kickoff, market, selection, pick_code, probability, confidence, outcome, final_score",
+      )
+      .order("kickoff", { ascending: false })
+      .limit(150),
+  ]);
+
+  if (displayRows.error) {
+    warnMissingTable(displayRows.error.message);
     return null;
   }
 
-  const rows = (data ?? []) as PredictionRow[];
-  const won = rows.filter((r) => r.outcome === "won").length;
-  const lost = rows.filter((r) => r.outcome === "lost").length;
-  const voided = rows.filter((r) => r.outcome === "void").length;
-  const pending = rows.filter((r) => r.outcome === "pending").length;
-  const settled = won + lost;
+  const n = (r: { count: number | null }) => r.count ?? 0;
+  const rows = (displayRows.data ?? []) as PredictionRow[];
 
-  // Racha: liquidados en orden cronológico inverso
-  const settledRows = rows.filter((r) => r.outcome === "won" || r.outcome === "lost");
+  // Racha
   let streak: TrackRecord["stats"]["streak"] = null;
-  if (settledRows.length) {
-    const first = settledRows[0].outcome as "won" | "lost";
+  const seq = (lastSettled.data ?? []) as Array<{ outcome: "won" | "lost" }>;
+  if (seq.length) {
     let count = 0;
-    for (const r of settledRows) {
-      if (r.outcome === first) count++;
+    for (const r of seq) {
+      if (r.outcome === seq[0].outcome) count++;
       else break;
     }
-    streak = { type: first, count };
+    streak = { type: seq[0].outcome, count };
   }
 
-  const safeRows = rows.filter((r) => r.probability >= 85);
-  const safeWon = safeRows.filter((r) => r.outcome === "won").length;
-  const safeLost = safeRows.filter((r) => r.outcome === "lost").length;
-
-  const todayKey = new Date().toLocaleDateString("en-CA");
-  const isToday = (r: PredictionRow) =>
-    new Date(r.kickoff).toLocaleDateString("en-CA") === todayKey;
-  const today = {
-    won: rows.filter((r) => isToday(r) && r.outcome === "won").length,
-    lost: rows.filter((r) => isToday(r) && r.outcome === "lost").length,
-    pending: rows.filter((r) => isToday(r) && r.outcome === "pending").length,
-  };
-
-  // Últimos 14 días (solo liquidados)
+  // Gráfica de 14 días
   const byDayMap = new Map<string, { won: number; lost: number }>();
   for (let i = 13; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86_400_000);
     byDayMap.set(d.toLocaleDateString("en-CA"), { won: 0, lost: 0 });
   }
-  for (const r of settledRows) {
-    const key = new Date(r.kickoff).toLocaleDateString("en-CA");
-    const bucket = byDayMap.get(key);
-    if (bucket) bucket[r.outcome as "won" | "lost"]++;
+  for (const r of (settled14.data ?? []) as Array<{ outcome: "won" | "lost"; kickoff: string }>) {
+    const bucket = byDayMap.get(new Date(r.kickoff).toLocaleDateString("en-CA"));
+    if (bucket) bucket[r.outcome]++;
   }
   const byDay = [...byDayMap.entries()].map(([day, v]) => ({
     day,
@@ -237,22 +269,24 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
     ...v,
   }));
 
+  const settled = n(won) + n(lost);
+  const safeSettled = n(safeWon) + n(safeLost);
+
   return {
     rows,
     stats: {
-      total: rows.length,
-      won,
-      lost,
-      voided,
-      pending,
-      hitRate: settled > 0 ? Math.round((won / settled) * 100) : null,
+      total: n(total),
+      won: n(won),
+      lost: n(lost),
+      voided: n(voided),
+      pending: n(pending),
+      hitRate: settled > 0 ? Math.round((n(won) / settled) * 100) : null,
       streak,
-      today,
+      today: { won: n(todayWon), lost: n(todayLost), pending: n(todayPending) },
       safe: {
-        won: safeWon,
-        lost: safeLost,
-        hitRate:
-          safeWon + safeLost > 0 ? Math.round((safeWon / (safeWon + safeLost)) * 100) : null,
+        won: n(safeWon),
+        lost: n(safeLost),
+        hitRate: safeSettled > 0 ? Math.round((n(safeWon) / safeSettled) * 100) : null,
       },
     },
     byDay,
