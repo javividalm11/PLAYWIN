@@ -48,7 +48,8 @@ export async function getMatchWeather(
     const res = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${geo.lat}&longitude=${geo.lon}` +
         `&hourly=temperature_2m,precipitation_probability,wind_speed_10m&forecast_days=8&timezone=UTC`,
-      { headers: HEADERS, next: { revalidate: 3600 } },
+      // no-store: persistir pronósticos de 1h al KV consumía el límite gratuito
+      { headers: HEADERS, cache: "no-store" },
     );
     if (!res.ok) return null;
     const data = (await res.json()) as {

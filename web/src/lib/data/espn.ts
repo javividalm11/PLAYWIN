@@ -15,9 +15,21 @@ const HEADERS = {
   Accept: "application/json",
 };
 
+/**
+ * revalidate > 0 → caché persistente de Next (en Cloudflare escribe a KV:
+ * usar SOLO para datos de baja rotación — búsquedas, calendarios).
+ * revalidate = 0 → sin persistir (datos vivos: scoreboard, summaries).
+ * El KV gratuito permite 1000 escrituras/día; cachear datos con TTL de 30s
+ * las agotaba en horas.
+ */
 async function espnFetch<T>(url: string, revalidate: number): Promise<T | null> {
   try {
-    const res = await fetch(url, { headers: HEADERS, next: { revalidate } });
+    const res = await fetch(
+      url,
+      revalidate > 0
+        ? { headers: HEADERS, next: { revalidate } }
+        : { headers: HEADERS, cache: "no-store" },
+    );
     if (!res.ok) return null;
     return (await res.json()) as T;
   } catch {
@@ -148,7 +160,7 @@ export async function getScoreboard(dateYYYYMMDD?: string): Promise<Match[]> {
   const d = dateYYYYMMDD ?? new Date().toLocaleDateString("en-CA").replace(/-/g, "");
   const data = await espnFetch<EspnScoreboard>(
     `${SITE}/all/scoreboard?dates=${d}&limit=400`,
-    60,
+    0, // datos vivos: no persistir al KV
   );
   if (!data?.events) return [];
   return data.events.map((e) => mapEvent(e));
@@ -281,7 +293,7 @@ function mapForm(entry: FormEntry | undefined): FormGame[] {
 }
 
 export async function getMatchDetail(eventId: string): Promise<MatchDetail | null> {
-  const sum = await espnFetch<EspnSummary>(`${SITE}/all/summary?event=${eventId}`, 30);
+  const sum = await espnFetch<EspnSummary>(`${SITE}/all/summary?event=${eventId}`, 0);
   const comp = sum?.header?.competitions?.[0];
   if (!sum || !comp) return null;
 
