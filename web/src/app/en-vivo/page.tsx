@@ -3,6 +3,7 @@ import Link from "next/link";
 import { MatchCard } from "@/components/match-card";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { getTodayBoard, getMatchAnalysis } from "@/lib/data";
+import { PageHeading } from "@/components/page-heading";
 
 export const metadata: Metadata = { title: "En vivo" };
 export const revalidate = 30;
@@ -19,15 +20,9 @@ export default async function LivePage() {
   );
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <AutoRefresh seconds={45} />
-      <h1 className="flex items-center gap-3 text-2xl font-bold text-silver-100">
-        <span className="h-3 w-3 rounded-full bg-brand-400 animate-live-pulse" />
-        Partidos en vivo
-      </h1>
-      <p className="mt-1 text-sm text-silver-500">
-        Probabilidades recalculadas minuto a minuto. Esta página se actualiza sola cada 45s.
-      </p>
+      <PageHeading eyebrow="En directo · Fútbol" title="Partidos en vivo" icon="pulse" description={<>Probabilidades recalculadas minuto a minuto. La información se actualiza automáticamente cada 45 segundos.</>} />
 
       {live.length > 0 ? (
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

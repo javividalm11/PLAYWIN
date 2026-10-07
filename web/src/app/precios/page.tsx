@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PaddleCheckout } from "@/components/paddle-checkout";
+import { InterfaceIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Precios" };
 
@@ -35,7 +36,7 @@ const STEPS = [
   },
   {
     badge: "Recomendado",
-    title: "PLAYWIN Pro",
+    title: "PickVerde Pro",
     price: "$9",
     period: "USD / mes",
     highlight: true,
@@ -54,6 +55,8 @@ export default function PricingPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="text-center">
+        <span className="icon-well mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-400/10 text-brand-400"><InterfaceIcon name="trophy" className="h-7 w-7" /></span>
+        <p className="section-kicker">Acceso PickVerde</p>
         <h1 className="text-3xl font-bold text-silver-100 md:text-4xl">
           Precios <span className="text-gradient-brand">simples</span>
         </h1>
@@ -67,7 +70,7 @@ export default function PricingPage() {
         {STEPS.map((plan) => (
           <div
             key={plan.title}
-            className={`card-surface relative flex flex-col p-6 ${
+            className={`card-surface interactive-card relative flex flex-col p-6 ${
               plan.highlight ? "border-brand-500/60 glow-brand" : ""
             }`}
           >

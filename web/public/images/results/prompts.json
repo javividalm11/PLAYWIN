@@ -1,0 +1,21 @@
+{
+  "tool": "built-in image_gen",
+  "assets": [
+    {
+      "file": "accuracy.webp",
+      "prompt": "Use case: ads-marketing. Asset type: square background artwork for a PickVerde sports statistics card, NOT a complete UI card. Premium sports campaign photographic collage, crisp realistic anatomy, cinematic grayscale subject with acid lime accents (#a4e100), charcoal #0d0f0d, angular speed slashes, subtle grain. Subject occupies RIGHTMOST 45%, leave LEFT 60% and top-left mostly empty smooth background for live HTML metric text overlay. Absolutely no text, letters, digits, logos, watermark, charts, badges, borders or rounded frame. Square 1024x1024 composition, edge-to-edge. Subject and backdrop: Single male football player sprinting forward at lower right, lime monochrome jersey, entire backdrop vivid acid lime #a4e100. Dramatic dark green shadows, diagonal lime-on-lime action streaks along right edge. Left side clean solid lime."
+    },
+    {
+      "file": "confidence.webp",
+      "prompt": "Use case: ads-marketing. Asset type: square background artwork for a PickVerde sports statistics card, NOT a complete UI card. Premium sports campaign photographic collage, crisp realistic anatomy, cinematic grayscale subject with acid lime accents (#a4e100), charcoal #0d0f0d, angular speed slashes, subtle grain. Subject occupies RIGHTMOST 45%, leave LEFT 60% and top-left mostly empty smooth background for live HTML metric text overlay. Absolutely no text, letters, digits, logos, watermark, charts, badges, borders or rounded frame. Square 1024x1024 composition, edge-to-edge. Subject and backdrop: Two football teammates high-fiving, closely cropped raised hands and upper bodies at right, grayscale sports photography. Near black charcoal background, clean dark left half, sparse sharp lime slashes on far right. Moody stadium lighting."
+    },
+    {
+      "file": "streak.webp",
+      "prompt": "Use case: ads-marketing. Asset type: square background artwork for a PickVerde sports statistics card, NOT a complete UI card. Premium sports campaign photographic collage, crisp realistic anatomy, cinematic grayscale subject with acid lime accents (#a4e100), charcoal #0d0f0d, angular speed slashes, subtle grain. Subject occupies RIGHTMOST 45%, leave LEFT 60% and top-left mostly empty smooth background for live HTML metric text overlay. Absolutely no text, letters, digits, logos, watermark, charts, badges, borders or rounded frame. Square 1024x1024 composition, edge-to-edge. Subject and backdrop: A realistic grayscale soccer ball striking the net on right edge, sweeping white net strands extending diagonally behind it. White/off-white background, pristine white left half. Two sparse lime angular slashes near ball. Bright premium photography."
+    },
+    {
+      "file": "transparency.webp",
+      "prompt": "Use case: ads-marketing. Asset type: square background artwork for a PickVerde sports statistics card, NOT a complete UI card. Premium sports campaign photographic collage, crisp realistic anatomy, cinematic grayscale subject with acid lime accents (#a4e100), charcoal #0d0f0d, angular speed slashes, subtle grain. Subject occupies RIGHTMOST 45%, leave LEFT 60% and top-left mostly empty smooth background for live HTML metric text overlay. Absolutely no text, letters, digits, logos, watermark, charts, badges, borders or rounded frame. Square 1024x1024 composition, edge-to-edge. Subject and backdrop: Football player seen from behind raising one fist at right in a stadium, grayscale photography and moody floodlights. Charcoal near-black background with empty dark left half. Sparse lime diagonal slashes lower right. Reflective match atmosphere, no celebratory claims or writing."
+    }
+  ]
+}

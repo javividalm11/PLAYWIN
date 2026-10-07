@@ -19,7 +19,9 @@ export function HeaderAuth() {
   useEffect(() => {
     const supabase = getBrowserSupabase();
     if (!supabase) {
-      setSession(null);
+      // Sin llaves de Supabase no hay sesión posible; se resuelve fuera del
+      // cuerpo del efecto para no encadenar renders.
+      queueMicrotask(() => setSession(null));
       return;
     }
 
@@ -70,14 +72,14 @@ export function HeaderAuth() {
   }, []);
 
   if (session === "loading") {
-    return <div className="h-9 w-40 animate-pulse rounded-lg bg-pitch-700/60" aria-hidden />;
+    return <div className="pv-navbar-auth-loading" aria-hidden><span /><span /></div>;
   }
 
   if (session) {
     const label = session.displayName || session.email;
     const initial = label.charAt(0).toUpperCase();
     return (
-      <div className="flex items-center gap-2">
+      <div className="pv-navbar-session flex items-center gap-2">
         <Link
           href="/perfil"
           className="flex items-center gap-2.5 rounded-full bg-pitch-700 py-1.5 pl-1.5 pr-4 transition-colors hover:bg-pitch-600"
@@ -93,7 +95,7 @@ export function HeaderAuth() {
               className="h-7 w-7 rounded-full object-cover"
             />
           ) : (
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 text-xs font-bold text-pitch-950">
               {initial}
             </span>
           )}
@@ -114,18 +116,18 @@ export function HeaderAuth() {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="pv-navbar-auth-buttons">
       <Link
         href="/login"
-        className="rounded-lg px-3 py-2 text-sm font-medium text-silver-300 transition-colors hover:bg-pitch-700 hover:text-white"
+        className="pv-navbar-login"
       >
-        Iniciar sesión
+        Acceder
       </Link>
       <Link
         href="/registro"
-        className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-pitch-950 transition-all hover:bg-brand-400 hover:glow-brand"
+        className="pv-navbar-trial"
       >
-        Probar gratis
+        Probar gratis<svg viewBox="0 0 24 24" fill="none" aria-hidden><path d="M4 12h15m-6-6 6 6-6 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </Link>
     </div>
   );

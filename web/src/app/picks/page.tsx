@@ -3,6 +3,8 @@ import Link from "next/link";
 import { PickCard } from "@/components/pick-card";
 import { getDailyPicks } from "@/lib/data";
 import { isSafePick } from "@/lib/prediction/config";
+import { PageHeading } from "@/components/page-heading";
+import { InterfaceIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Picks del día" };
 export const revalidate = 300;
@@ -13,20 +15,18 @@ export default async function PicksPage() {
   const rest = picks.filter((p) => !isSafePick(p.prediction.pick.probability));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-silver-100">🎯 Picks del día</h1>
-      <p className="mt-1 text-sm text-silver-500">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+      <PageHeading eyebrow="Selección algorítmica · Fútbol" title="Pronósticos del día" icon="target" description={<>
         Selecciones del modelo con su explicación. El rendimiento histórico verificable
         está en{" "}
         <Link href="/resultados" className="font-semibold text-brand-500 hover:text-brand-400">
           Resultados
         </Link>
-        .
-      </p>
+        .</>} />
 
       {safe.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-1 text-lg font-bold text-silver-100">🔒 Picks seguros</h2>
+          <h2 className="mb-1 flex items-center gap-2.5 text-lg font-bold text-silver-100"><InterfaceIcon name="shield" className="h-5 w-5 text-brand-400" />Picks de alta confianza</h2>
           <p className="mb-4 text-xs text-silver-500">
             Certeza extrema (≥85% de probabilidad). Pocos al día, máxima fiabilidad.
           </p>
@@ -40,7 +40,7 @@ export default async function PicksPage() {
 
       {rest.length > 0 && (
         <section className="mt-10">
-          <h2 className="mb-4 text-lg font-bold text-silver-100">⚡ Más picks del día</h2>
+          <h2 className="mb-4 flex items-center gap-2.5 text-lg font-bold text-silver-100"><InterfaceIcon name="pulse" className="h-5 w-5 text-brand-400" />Más pronósticos del día</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {rest.map(({ match, prediction }) => (
               <PickCard key={match.id} match={match} prediction={prediction} />

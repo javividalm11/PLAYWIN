@@ -9,7 +9,7 @@ export type MatchWeather = {
   windKmh: number;
 };
 
-const HEADERS = { "User-Agent": "PLAYWIN/1.0" };
+const HEADERS = { "User-Agent": "PickVerde/1.0" };
 
 async function geocode(city: string, country?: string): Promise<{ lat: number; lon: number } | null> {
   try {

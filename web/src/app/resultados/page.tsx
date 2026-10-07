@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AutoRefresh } from "@/components/auto-refresh";
-import { settlePending, getTrackRecord, type PredictionRow, type TrackRecord } from "@/lib/predictions/store";
+import { InterfaceIcon, type InterfaceIconName } from "@/components/icons";
+import { PageHeading } from "@/components/page-heading";
+import { DailyChart } from "@/components/daily-chart";
+import { settlePending, getTrackRecord, type PredictionRow } from "@/lib/predictions/store";
 
 export const metadata: Metadata = { title: "Resultados del modelo" };
 export const dynamic = "force-dynamic";
@@ -32,85 +35,25 @@ function StatTile({
   value,
   hint,
   hero = false,
+  icon,
 }: {
   label: string;
   value: string;
   hint?: string;
   hero?: boolean;
+  icon: InterfaceIconName;
 }) {
   return (
-    <div className="card-surface p-5">
-      <p className="text-xs font-semibold uppercase tracking-wider text-silver-500">{label}</p>
-      <p
-        className={`mt-2 font-semibold text-silver-100 ${hero ? "text-5xl text-brand-400" : "text-3xl"}`}
-      >
-        {value}
-      </p>
-      {hint && <p className="mt-1 text-xs text-silver-600">{hint}</p>}
-    </div>
-  );
-}
-
-/* ─────────── Gráfica: rendimiento por día (columnas apiladas) ─────────── */
-
-function DailyChart({ byDay }: { byDay: TrackRecord["byDay"] }) {
-  const CHART_H = 140;
-  const max = Math.max(1, ...byDay.map((d) => d.won + d.lost));
-
-  return (
-    <div className="card-surface p-5 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-silver-400">
-          Rendimiento por día — últimos 14 días
-        </h2>
-        {/* Leyenda de estados (icono + etiqueta, nunca solo color) */}
-        <div className="flex gap-4 text-xs text-silver-400">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-brand-500" aria-hidden /> ✓ Acertados
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-risk-500" aria-hidden /> ✗ Fallados
-          </span>
+    <div className="card-surface interactive-card group overflow-hidden p-5 md:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-[.15em] text-silver-500">{label}</p>
+          <p className={`mt-3 font-mono font-bold tracking-tight text-silver-100 ${hero ? "text-5xl text-brand-400" : "text-4xl"}`}>{value}</p>
         </div>
+        <span className="icon-well flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-400/10 text-brand-400"><InterfaceIcon name={icon} className="h-5 w-5" /></span>
       </div>
-
-      <div className="mt-6 flex items-end justify-between gap-1.5" style={{ height: CHART_H + 24 }}>
-        {byDay.map((d) => {
-          const total = d.won + d.lost;
-          const wonH = Math.round((d.won / max) * CHART_H);
-          const lostH = Math.round((d.lost / max) * CHART_H);
-          return (
-            <div key={d.day} className="group relative flex flex-1 flex-col items-center justify-end gap-0">
-              {/* tooltip */}
-              <div className="pointer-events-none absolute -top-1 left-1/2 z-10 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-pitch-600 bg-pitch-950 px-2.5 py-1.5 text-[11px] text-silver-300 group-hover:block">
-                {new Intl.DateTimeFormat("es", { day: "numeric", month: "short" }).format(new Date(d.day + "T12:00:00"))}
-                : <span className="font-semibold text-brand-400">{d.won} ✓</span> ·{" "}
-                <span className="font-semibold text-risk-500">{d.lost} ✗</span>
-              </div>
-
-              {/* columna apilada: fallados arriba, acertados en la base */}
-              <div className="flex w-full max-w-6 flex-col items-stretch">
-                {lostH > 0 && (
-                  <div
-                    className={`w-full bg-risk-500 ${d.won === 0 ? "rounded-t" : "rounded-t"}`}
-                    style={{ height: lostH }}
-                  />
-                )}
-                {d.won > 0 && lostH > 0 && <div className="h-0.5 w-full" aria-hidden />}
-                {wonH > 0 && (
-                  <div
-                    className={`w-full bg-brand-500 ${d.lost === 0 ? "rounded-t" : ""}`}
-                    style={{ height: wonH }}
-                  />
-                )}
-                {total === 0 && <div className="h-0.5 w-full rounded bg-pitch-600" aria-hidden />}
-              </div>
-              <span className="mt-2 text-[10px] text-silver-600">{d.label}</span>
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-1 h-px w-full bg-pitch-600" aria-hidden />
+      {hint && <p className="mt-2 text-xs leading-5 text-silver-600">{hint}</p>}
+      <div className="mt-5 h-px bg-gradient-to-r from-brand-400/45 to-transparent" />
     </div>
   );
 }
@@ -120,7 +63,7 @@ function DailyChart({ byDay }: { byDay: TrackRecord["byDay"] }) {
 function MatchRow({ row }: { row: PredictionRow }) {
   const o = OUTCOME[row.outcome];
   return (
-    <li className="border-b border-pitch-700/60 py-3.5 last:border-0">
+    <li className="rounded-xl border-b border-pitch-700/60 px-3 py-3.5 transition-colors hover:bg-white/[.025] last:border-0">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
         <div className="min-w-0">
           <Link
@@ -167,7 +110,7 @@ export default async function ResultsPage() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16">
         <div className="card-surface p-8 text-sm leading-relaxed text-silver-400">
-          <h1 className="mb-3 text-xl font-bold text-silver-100">📊 Resultados del modelo</h1>
+          <h1 className="mb-3 flex items-center gap-3 text-xl font-bold text-silver-100"><InterfaceIcon name="chart" className="h-6 w-6 text-brand-400" /> Resultados del modelo</h1>
           Para activar el track record ejecuta{" "}
           <code className="rounded bg-pitch-700 px-1.5 py-0.5 text-brand-400">
             supabase/migrations/002-pronosticos.sql
@@ -182,13 +125,9 @@ export default async function ResultsPage() {
   const settled = stats.won + stats.lost;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
       <AutoRefresh seconds={90} />
-      <h1 className="text-2xl font-bold text-silver-100">📊 Resultados del modelo</h1>
-      <p className="mt-1 max-w-2xl text-sm text-silver-500">
-        Cada pronóstico se congela antes del kickoff y se liquida automáticamente con el
-        marcador final. Sin trampas: esta página incluye aciertos y fallos.
-      </p>
+      <PageHeading eyebrow="Transparencia PickVerde" title="Rendimiento del modelo" icon="chart" description={<>Cada pronóstico queda registrado antes del inicio y se liquida automáticamente con el marcador final. <strong className="font-semibold text-silver-200">Aciertos y fallos, sin filtros.</strong></>} />
 
       {/* KPIs */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -197,11 +136,13 @@ export default async function ResultsPage() {
           value={stats.hitRate != null ? `${stats.hitRate}%` : "—"}
           hint={settled > 0 ? `sobre ${settled} liquidados` : "aún sin liquidados"}
           hero
+          icon="trophy"
         />
         <StatTile
           label="Hoy"
           value={`${stats.today.won}✓ ${stats.today.lost}✗`}
           hint={`${stats.today.pending} pendientes`}
+          icon="calendar"
         />
         <StatTile
           label="Racha actual"
@@ -210,6 +151,7 @@ export default async function ResultsPage() {
               ? `${stats.streak.count} ${stats.streak.type === "won" ? "✓" : "✗"}`
               : "—"
           }
+          icon="pulse"
           hint={
             stats.streak
               ? stats.streak.type === "won"
@@ -219,13 +161,14 @@ export default async function ResultsPage() {
           }
         />
         <StatTile
-          label="🔒 Picks seguros"
+          label="Picks de alta confianza"
           value={stats.safe.hitRate != null ? `${stats.safe.hitRate}%` : "—"}
           hint={
             stats.safe.won + stats.safe.lost > 0
               ? `${stats.safe.won}✓ ${stats.safe.lost}✗ · prob. ≥85% · ${stats.total} pronósticos totales`
               : `aún sin liquidados · ${stats.total} pronósticos totales`
           }
+          icon="shield"
         />
       </div>
 
@@ -238,7 +181,7 @@ export default async function ResultsPage() {
       <section className="mt-6">
         <div className="card-surface p-5 md:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-silver-400">
+            <h2 className="text-xs font-extrabold uppercase tracking-[.15em] text-silver-300">
               Pronósticos por partido
             </h2>
             <div className="flex flex-wrap gap-3 text-[11px] text-silver-500">
@@ -253,11 +196,10 @@ export default async function ResultsPage() {
 
           {rows.length > 0 ? (
             (() => {
-              const now = Date.now();
-              // Jugados/en juego primero (más reciente arriba); próximos al final
-              const past = rows.filter((r) => new Date(r.kickoff).getTime() <= now);
+              // Liquidados primero; pronósticos aún pendientes al final.
+              const past = rows.filter((r) => r.outcome !== "pending");
               const upcoming = rows
-                .filter((r) => new Date(r.kickoff).getTime() > now)
+                .filter((r) => r.outcome === "pending")
                 .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
               return (
                 <>
@@ -269,7 +211,7 @@ export default async function ResultsPage() {
                   {upcoming.length > 0 && (
                     <>
                       <h3 className="mt-8 mb-2 text-xs font-bold uppercase tracking-wider text-silver-500">
-                        📅 Próximos pronósticos ya congelados
+                        Próximos pronósticos ya registrados
                       </h3>
                       <ul>
                         {upcoming.slice(0, 15).map((r) => (

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Prediction } from "@/lib/types";
 import { confidenceStyles } from "@/lib/format";
 import { ProbBar } from "./prob-bar";
+import { InterfaceIcon } from "./icons";
 
 type ScanState =
   | { phase: "idle" }
@@ -18,7 +19,7 @@ type ScanState =
     };
 
 /**
- * Panel "Escanear partido": la acción de servicio de PLAYWIN.
+ * Panel "Escanear partido": la acción de servicio de PickVerde.
  * POST /api/predict → análisis completo, o paywall (402) si el trial expiró.
  * En partidos en vivo, tras el primer escaneo se refresca solo cada 45s.
  */
@@ -90,7 +91,7 @@ export function ScanPanel({
         />
         <div className="relative">
           <h2 className="text-lg font-bold text-silver-100">
-            {isFinished ? "Lectura del partido" : "Análisis PLAYWIN"}
+            {isFinished ? "Lectura del partido" : "Análisis PickVerde"}
           </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-silver-500">
             El modelo leerá forma reciente, historial directo, cuotas del mercado, clima
@@ -111,7 +112,7 @@ export function ScanPanel({
                 Analizando datos…
               </>
             ) : (
-              <>🔍 Escanear partido</>
+              <><InterfaceIcon name="search" className="h-4 w-4" /> Escanear partido</>
             )}
           </button>
           <p className="mt-3 text-[11px] text-silver-600">
@@ -133,7 +134,7 @@ export function ScanPanel({
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_90%_at_50%_-20%,rgba(164,225,0,0.12),transparent)]"
         />
         <div className="relative">
-          <p className="text-3xl">{isRegister ? "🎁" : "⭐"}</p>
+          <span className="icon-well mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-400/10 text-brand-400"><InterfaceIcon name={isRegister ? "target" : "trophy"} className="h-6 w-6" /></span>
           <h2 className="mt-2 text-xl font-bold text-silver-100">
             {isRegister ? "Tu prueba gratuita terminó" : "Tus días extra terminaron"}
           </h2>
@@ -197,7 +198,7 @@ export function ScanPanel({
         {!isFinished && (
           <div className="mt-6 rounded-xl border border-brand-500/25 bg-brand-500/5 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-brand-500">
-              {prediction.pick.probability >= 85 ? "🔒 Pick seguro" : "Pick recomendado"} ·{" "}
+              {prediction.pick.probability >= 85 ? "Pick de alta confianza" : "Pick recomendado"} ·{" "}
               {prediction.pick.market}
             </p>
             <div className="mt-1.5 flex items-baseline justify-between gap-3">
@@ -219,7 +220,7 @@ export function ScanPanel({
         {!isFinished && !isLive && prediction.valuePick && (
           <div className="mt-3 rounded-xl border border-warn-500/25 bg-warn-500/5 p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-warn-400">
-              ⚡ Pick de valor · {prediction.valuePick.market}
+              Pick de valor · {prediction.valuePick.market}
             </p>
             <div className="mt-1.5 flex items-baseline justify-between gap-3">
               <p className="text-sm font-bold text-silver-200">{prediction.valuePick.selection}</p>

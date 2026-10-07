@@ -9,6 +9,7 @@ import { TeamBadge } from "@/components/team-badge";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { ScanPanel } from "@/components/scan-panel";
 import type { LiveStats } from "@/lib/types";
+import { SportIcon } from "@/components/icons";
 
 export async function generateMetadata({
   params,
@@ -51,7 +52,7 @@ function StatRow({ label, home, away }: { label: string; home: number; away: num
 
 function LiveStatsPanel({ stats, isFinished }: { stats: LiveStats; isFinished: boolean }) {
   return (
-    <div className="card-surface p-5">
+    <div className="card-surface interactive-card p-5">
       <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-silver-400">
         {isFinished ? "Estadísticas del partido" : "Estadísticas en vivo"}
       </h2>
@@ -103,18 +104,19 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const isFinished = match.status === "finished";
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       {isLive && <AutoRefresh seconds={45} />}
 
       {/* ─── Cabecera del partido (datos libres) ─── */}
-      <div className="card-surface relative overflow-hidden p-6 md:p-8">
+      <div className="card-surface interactive-card relative overflow-hidden p-6 md:p-8">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_100%_at_50%_-30%,rgba(164,225,0,0.08),transparent)]"
         />
         <div className="relative">
           <div className="flex items-center justify-between text-xs text-silver-500">
-            <span>
+            <span className="flex items-center gap-2">
+              <SportIcon sport="football" className="h-4 w-4 text-brand-400" />
               {match.league}
               {match.venue ? ` · ${match.venue}` : ""}
             </span>

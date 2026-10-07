@@ -1,0 +1,5 @@
+{
+  "tool": "Built-in image_gen",
+  "asset": "football-pitch.webp",
+  "prompt": "Use case: ads-marketing. Asset type: decorative illustration for a football analytics website card. Wide landscape 3:2 premium photorealistic 3D render on a softly glowing ivory and very pale green background. A large classic black and white soccer ball floats slightly to the right of center over a tilted emerald football pitch with crisp white field markings receding into perspective. An elegant bright lime-green orbital light trail loops around the ball and arcs along the pitch, small light particles and subtle halftone green dots behind ball toward upper right. Perspective miniature football field, smooth lighting, soft natural shadows, white vignette blending seamlessly into background at all edges. Leave left quarter and upper right corner clear for small HTML floating data panels. Ball in central-right region, full ball visible, no cropping. No people, no numbers, no text, no logos, no cards, no interface, no watermark. Colors PickVerde lime #a4e100, emerald green, ivory white."
+}

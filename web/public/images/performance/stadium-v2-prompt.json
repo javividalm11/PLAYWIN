@@ -1,0 +1,5 @@
+{
+  "tool": "built-in image_gen",
+  "file": "stadium-v2.webp",
+  "prompt": "Edit this soccer stadium background for a glass sports dashboard. Keep the lush grass at the bottom 15% and same premium daytime photographic style. Change stadium framing ONLY: bring the stadium roofs, white floodlights and blurred crowded stands much higher and closer into both TOP corners so the roofs begin at the very top edges. Compress the blue sky to a small pale blue opening at the upper center, about 10-15% of image height; avoid a large empty sky. Keep the center bright, airy, softly blurred. No people, text, logos, footballs or UI. Landscape framing unchanged."
+}

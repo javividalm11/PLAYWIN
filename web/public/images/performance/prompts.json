@@ -1,0 +1,15 @@
+{
+  "tool": "built-in image_gen",
+  "assets": [
+    {
+      "key": "stadium",
+      "prompt": "Use case: ads-marketing. Asset type: photographic background for PickVerde model performance analytics dashboard. Create an ultra realistic wide 16:9 soccer stadium from pitch level, lush detailed lime green grass along bottom 20%, blurred bright stadium stands sweeping inward symmetrically along left and right, rows of white floodlights, soft pale blue sky in upper center, daytime sun, slightly shallow depth of field and polished premium sports photography. Center 80% is light airy low contrast to sit behind a translucent white dashboard. No people, no football, no logos, no writing, no UI, no graph, no text, no watermark. Background must fill entire landscape image, 16:9 composition.",
+      "transparent": false
+    },
+    {
+      "key": "player",
+      "prompt": "Use case: ads-marketing. Asset type: transparent photographic athlete cutout for header of a PickVerde analytics dashboard. Realistic rear view of one adult male football player from waist up, centered, short dark curly hair, athletic build, white soccer jersey with subtle pale grey trim, plain back with absolutely NO numbers, NO sponsor, NO logos, NO lettering. He faces away toward a football pitch, shoulders relaxed, head upright. Crop below mid torso, keep full head and both shoulders in frame, natural daylight rim lighting, premium sports campaign photography with realistic cloth and hair texture. Isolated on a genuinely transparent background, no stadium, no floor, no shadow outside the figure. Tall 3:4 composition.",
+      "transparent": true
+    }
+  ]
+}

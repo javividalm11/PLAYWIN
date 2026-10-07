@@ -74,53 +74,52 @@ export function AuthForm({ mode }: { mode: "login" | "registro" }) {
   }
 
   return (
-    <div className="card-surface mx-auto w-full max-w-md p-8">
-      <h1 className="text-2xl font-bold text-silver-100">
-        {isLogin ? "Bienvenido de vuelta" : "Crea tu cuenta"}
+    <div className="flex w-full flex-col items-start min-[721px]:w-[min(70vw,520px)] min-[1101px]:w-[min(34vw,620px)] min-[1101px]:min-w-[380px]">
+      <span className="auth-mono bg-white/[0.09] px-[clamp(14px,1.1vw,20px)] py-[clamp(9px,0.8vw,14px)] text-[clamp(11px,0.72vw,14px)] font-normal uppercase leading-none tracking-[0.2em] text-white">
+        [ {isLogin ? "Acceso" : "Prueba gratis"} ]
+      </span>
+
+      <h1 className="auth-display mt-[clamp(28px,3vw,52px)] text-[clamp(44px,6.2vw,104px)] font-[200] leading-[0.95] tracking-[0.03em] text-white">
+        PICKVERDE
       </h1>
-      <p className="mt-1.5 text-sm text-silver-500">
-        {isLogin
-          ? "Entra para continuar con tus análisis."
-          : "Regístrate gratis y obtén 2 días extra de acceso completo."}
+
+      <p className="auth-mono mt-[clamp(14px,1.4vw,24px)] text-[clamp(11px,0.94vw,17px)] font-[300] uppercase leading-[1.4] tracking-[0.14em] text-white/60">
+        {isLogin ? "Vuelve a tus análisis." : "3 días de acceso completo. Sin tarjeta."}
       </p>
 
-      <form onSubmit={onSubmit} className="mt-7 flex flex-col gap-4">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-silver-400">
-            Correo electrónico
-          </span>
+      <form onSubmit={onSubmit} noValidate className="mt-[clamp(38px,4.6vw,82px)] flex w-full flex-col gap-[clamp(14px,1.3vw,22px)]">
+        <label className="w-full">
+          <span className="sr-only">Correo electrónico</span>
           <input
             type="email"
             name="email"
             required
             autoComplete="email"
-            placeholder="tu@correo.com"
-            className="rounded-xl border border-pitch-600 bg-pitch-800 px-4 py-3 text-sm text-silver-100 outline-none transition-colors placeholder:text-silver-600 focus:border-brand-500/60"
+            placeholder="Correo"
+            className="auth-input auth-display w-full px-[2px] pb-[clamp(12px,1.1vw,18px)] text-[clamp(16px,0.95vw,18px)] font-[300] text-white"
           />
         </label>
 
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-silver-400">
-            Contraseña
-          </span>
+        <label className="w-full">
+          <span className="sr-only">Contraseña</span>
           <input
             type="password"
             name="password"
             required
             minLength={8}
             autoComplete={isLogin ? "current-password" : "new-password"}
-            placeholder="Mínimo 8 caracteres"
-            className="rounded-xl border border-pitch-600 bg-pitch-800 px-4 py-3 text-sm text-silver-100 outline-none transition-colors placeholder:text-silver-600 focus:border-brand-500/60"
+            placeholder={isLogin ? "Contraseña" : "Contraseña (mínimo 8 caracteres)"}
+            className="auth-input auth-display w-full px-[2px] pb-[clamp(12px,1.1vw,18px)] text-[clamp(16px,0.95vw,18px)] font-[300] text-white"
           />
         </label>
 
         {error && (
-          <p className="rounded-lg border border-risk-500/40 bg-risk-500/10 px-3 py-2 text-sm text-risk-500">
+          <p role="alert" className="auth-mono border-l-2 border-risk-500 bg-risk-500/10 px-4 py-3 text-[12px] leading-[1.5] text-white">
             {error}
           </p>
         )}
         {notice && (
-          <p className="rounded-lg border border-brand-500/40 bg-brand-500/10 px-3 py-2 text-sm text-brand-400">
+          <p role="status" className="auth-mono border-l-2 border-brand-500 bg-brand-500/10 px-4 py-3 text-[12px] leading-[1.5] text-white">
             {notice}
           </p>
         )}
@@ -128,38 +127,25 @@ export function AuthForm({ mode }: { mode: "login" | "registro" }) {
         <button
           type="submit"
           disabled={pending}
-          className="mt-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-bold text-pitch-950 transition-all hover:bg-brand-400 disabled:opacity-60"
+          className="auth-mono w-full bg-white/[0.10] px-5 py-[clamp(17px,1.6vw,27px)] text-[clamp(11px,0.78vw,14px)] font-normal uppercase tracking-[0.22em] text-white transition-colors duration-[250ms] hover:bg-white/[0.17] disabled:opacity-50"
         >
-          {pending ? "Un momento…" : isLogin ? "Iniciar sesión" : "Crear cuenta gratis"}
+          {pending ? "Un momento…" : isLogin ? "Acceder" : "Crear cuenta"}
         </button>
+
+        <Link
+          href={isLogin ? "/registro" : "/login"}
+          className="auth-mono w-full bg-white/[0.05] px-5 py-[clamp(17px,1.6vw,27px)] text-center text-[clamp(11px,0.78vw,14px)] font-normal uppercase tracking-[0.22em] text-white/40 transition-colors duration-[250ms] hover:bg-white/[0.09] hover:text-white"
+        >
+          {isLogin ? "Crear una cuenta" : "Ya tengo cuenta"}
+        </Link>
       </form>
 
-      <p className="mt-6 text-center text-sm text-silver-500">
-        {isLogin ? (
-          <>
-            ¿No tienes cuenta?{" "}
-            <Link href="/registro" className="font-semibold text-brand-500 hover:text-brand-400">
-              Regístrate gratis
-            </Link>
-          </>
-        ) : (
-          <>
-            ¿Ya tienes cuenta?{" "}
-            <Link href="/login" className="font-semibold text-brand-500 hover:text-brand-400">
-              Inicia sesión
-            </Link>
-          </>
-        )}
-      </p>
-
-      {!isLogin && (
-        <p className="mt-4 text-center text-[11px] leading-relaxed text-silver-600">
-          Al registrarte aceptas nuestros{" "}
-          <Link href="/terminos" className="underline hover:text-silver-400">términos</Link> y{" "}
-          <Link href="/privacidad" className="underline hover:text-silver-400">privacidad</Link>.
-          Servicio para mayores de 18 años.
-        </p>
-      )}
+      <Link
+        href="/precios"
+        className="auth-mono mt-[clamp(26px,2.6vw,46px)] self-center text-[clamp(11px,0.74vw,14px)] font-normal uppercase tracking-[0.18em] text-white transition-colors hover:text-white/60 hover:underline hover:underline-offset-4"
+      >
+        Ver qué incluye el plan
+      </Link>
     </div>
   );
 }

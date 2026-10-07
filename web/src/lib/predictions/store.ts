@@ -169,7 +169,11 @@ export type TrackRecord = {
     safe: { won: number; lost: number; hitRate: number | null };
   };
   byDay: Array<{ day: string; label: string; won: number; lost: number }>;
+  trends?: { hitRate: number | null; safeHitRate: number | null; streak: number | null; monthly: number | null };
 };
+
+/** Días que cubre `byDay`. El hero los pinta todos; /resultados recorta a 14. */
+const DAY_WINDOW = 32;
 
 export async function getTrackRecord(): Promise<TrackRecord | null> {
   const db = getAdminSupabase();
@@ -182,7 +186,11 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const todayEnd = new Date(todayStart.getTime() + 86_400_000);
-  const since14 = new Date(Date.now() - 14 * 86_400_000).toISOString();
+  // 32 días: el hero pinta la serie completa, /resultados recorta a los últimos 14.
+  const sinceWindow = new Date(Date.now() - DAY_WINDOW * 86_400_000).toISOString();
+  const monthStart = new Date(todayStart.getFullYear(), todayStart.getMonth(), 1);
+  const previousMonthStart = new Date(todayStart.getFullYear(), todayStart.getMonth() - 1, 1);
+  const previousMonthEnd = new Date(todayStart.getFullYear(), todayStart.getMonth() - 1, Math.min(todayStart.getDate(), new Date(todayStart.getFullYear(), todayStart.getMonth(), 0).getDate()) + 1);
 
   const [
     total,
@@ -195,9 +203,11 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
     todayWon,
     todayLost,
     todayPending,
-    settled14,
+    settledWindow,
     lastSettled,
     displayRows,
+    monthSettled,
+    previousMonthSettled,
   ] = await Promise.all([
     head(),
     head().eq("outcome", "won"),
@@ -209,13 +219,13 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
     head().eq("outcome", "won").gte("kickoff", todayStart.toISOString()).lt("kickoff", todayEnd.toISOString()),
     head().eq("outcome", "lost").gte("kickoff", todayStart.toISOString()).lt("kickoff", todayEnd.toISOString()),
     head().eq("outcome", "pending").gte("kickoff", todayStart.toISOString()).lt("kickoff", todayEnd.toISOString()),
-    // Liquidados de los últimos 14 días para la gráfica (columnas mínimas)
+    // Liquidados de la ventana de la gráfica (columnas mínimas)
     db
       .from("predictions")
-      .select("outcome, kickoff")
+      .select("outcome, kickoff, probability")
       .in("outcome", ["won", "lost"])
-      .gte("kickoff", since14)
-      .limit(3000),
+      .gte("kickoff", sinceWindow)
+      .limit(6000),
     // Últimos liquidados para la racha
     db
       .from("predictions")
@@ -231,6 +241,8 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
       )
       .order("kickoff", { ascending: false })
       .limit(150),
+    head().in("outcome", ["won", "lost"]).gte("kickoff", monthStart.toISOString()).lt("kickoff", todayEnd.toISOString()),
+    head().in("outcome", ["won", "lost"]).gte("kickoff", previousMonthStart.toISOString()).lt("kickoff", previousMonthEnd.toISOString()),
   ]);
 
   if (displayRows.error) {
@@ -253,13 +265,13 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
     streak = { type: seq[0].outcome, count };
   }
 
-  // Gráfica de 14 días
+  // Gráfica diaria (ventana de DAY_WINDOW días)
   const byDayMap = new Map<string, { won: number; lost: number }>();
-  for (let i = 13; i >= 0; i--) {
+  for (let i = DAY_WINDOW - 1; i >= 0; i--) {
     const d = new Date(Date.now() - i * 86_400_000);
     byDayMap.set(d.toLocaleDateString("en-CA"), { won: 0, lost: 0 });
   }
-  for (const r of (settled14.data ?? []) as Array<{ outcome: "won" | "lost"; kickoff: string }>) {
+  for (const r of (settledWindow.data ?? []) as Array<{ outcome: "won" | "lost"; kickoff: string }>) {
     const bucket = byDayMap.get(new Date(r.kickoff).toLocaleDateString("en-CA"));
     if (bucket) bucket[r.outcome]++;
   }
@@ -271,6 +283,26 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
 
   const settled = n(won) + n(lost);
   const safeSettled = n(safeWon) + n(safeLost);
+  const change = (current: number, previous: number): number | null => previous > 0 ? Math.round(((current - previous) / previous) * 100) : null;
+  const windowRows = (settledWindow.data ?? []) as Array<{ outcome: "won" | "lost"; kickoff: string; probability: number }>;
+  const weekStart = todayEnd.getTime() - 7 * 86_400_000;
+  const priorWeekStart = weekStart - 7 * 86_400_000;
+  const week = windowRows.filter(r => new Date(r.kickoff).getTime() >= weekStart && new Date(r.kickoff).getTime() < todayEnd.getTime());
+  const previousWeek = windowRows.filter(r => new Date(r.kickoff).getTime() >= priorWeekStart && new Date(r.kickoff).getTime() < weekStart);
+  const rate = (records: typeof week): number | null => records.length ? records.filter(r => r.outcome === "won").length / records.length : null;
+  const rateChange = (current: typeof week, previous: typeof week) => {
+    const a = rate(current), b = rate(previous);
+    return a != null && b != null ? change(a, b) : null;
+  };
+  const bestStreak = (records: typeof week) => {
+    let best = 0, run = 0;
+    for (const r of [...records].sort((a, b) => a.kickoff.localeCompare(b.kickoff))) {
+      run = r.outcome === "won" ? run + 1 : 0;
+      best = Math.max(best, run);
+    }
+    return best;
+  };
+  const completeWindow = !settledWindow.error && windowRows.length < 6000;
 
   return {
     rows,
@@ -290,5 +322,11 @@ export async function getTrackRecord(): Promise<TrackRecord | null> {
       },
     },
     byDay,
+    trends: {
+      hitRate: completeWindow ? rateChange(week, previousWeek) : null,
+      safeHitRate: completeWindow ? rateChange(week.filter(r => r.probability >= 85), previousWeek.filter(r => r.probability >= 85)) : null,
+      streak: completeWindow && week.length && previousWeek.length ? change(bestStreak(week), bestStreak(previousWeek)) : null,
+      monthly: !monthSettled.error && !previousMonthSettled.error ? change(n(monthSettled), n(previousMonthSettled)) : null,
+    },
   };
 }

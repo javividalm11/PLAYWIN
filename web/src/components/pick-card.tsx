@@ -10,7 +10,7 @@ export function PickCard({ match, prediction }: { match: Match; prediction: Pred
   return (
     <Link
       href={`/partido/${match.id}`}
-      className="card-surface group relative block overflow-hidden p-5 transition-all hover:-translate-y-0.5 hover:border-brand-500/50"
+      className="card-surface interactive-card group relative block overflow-hidden p-5"
     >
       {/* Probabilidad grande de fondo */}
       <span
@@ -24,7 +24,7 @@ export function PickCard({ match, prediction }: { match: Match; prediction: Pred
         <div className="flex flex-wrap items-center gap-2">
           {safe && (
             <span className="rounded-full bg-brand-500 px-2.5 py-0.5 text-[11px] font-bold text-pitch-950">
-              🔒 Pick seguro
+              ✓ Pick seguro
             </span>
           )}
           <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${conf.className}`}>

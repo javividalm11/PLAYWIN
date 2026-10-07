@@ -1,0 +1,5 @@
+{
+  "tool": "built-in image_gen",
+  "asset": "player-profile-full.webp",
+  "prompt": "Use case: precise-object-edit / outpainting. Edit this transparent football player cutout ONLY to REMOVE THE SIDE CROPPING. Preserve the same man, his exact rear three-quarter head pose turned slightly to his left, dark highlighted curls, lime-and-black collar, white jersey, dark number 10, lighting, anatomy and realistic cloth. Expand the composition to a WIDE 3:2 transparent canvas. Complete BOTH shoulders, BOTH short sleeves and their natural outer silhouette, with at least 12% fully transparent empty padding to the LEFT and RIGHT of the entire person. No body part or fabric may touch either lateral image edge. Keep full head with a small transparent margin above. Show head, shoulders, upper arms and upper torso; bottom can crop below the number 10 because it sits behind the website dashboard. Preserve genuinely transparent background, no stadium, no rectangle, no labels or interface, no added writing, no watermark. This is an extension of the approved image, not a redesign of the player."
+}

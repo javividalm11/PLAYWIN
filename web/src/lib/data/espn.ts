@@ -11,7 +11,7 @@ import { leagueName } from "./league-names";
 const SITE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
 const SEARCH = "https://site.web.api.espn.com/apis/search/v2";
 const HEADERS = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PLAYWIN/1.0",
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) PickVerde/1.0",
   Accept: "application/json",
 };
 

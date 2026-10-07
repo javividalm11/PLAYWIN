@@ -3,10 +3,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getAdminSupabase, getCurrentUser } from "@/lib/supabase/server";
 import { getRequestIdentity, checkAccess } from "@/lib/access/gate";
-import { ACCESS_RULES } from "@/lib/access/config";
 import { AvatarUploader } from "@/components/profile/avatar-uploader";
 import { AccountForm } from "@/components/profile/account-form";
 import { PasswordForm } from "@/components/profile/password-form";
+import { PageHeading } from "@/components/page-heading";
+import { InterfaceIcon } from "@/components/icons";
 
 export const metadata: Metadata = { title: "Mi perfil" };
 export const dynamic = "force-dynamic";
@@ -72,11 +73,11 @@ export default async function ProfilePage() {
   const access = await checkAccess(identity);
   const accessLabel =
     access.tier === "paid"
-      ? `⭐ PLAYWIN Pro${access.daysLeft ? ` · ${access.daysLeft} días restantes` : ""}`
+      ? `PickVerde Pro${access.daysLeft ? ` · ${access.daysLeft} días restantes` : ""}`
       : access.tier === "registered-trial"
-        ? `🎁 Prueba de registro · ${access.daysLeft} día${access.daysLeft === 1 ? "" : "s"} restante${access.daysLeft === 1 ? "" : "s"}`
+        ? `Prueba de registro · ${access.daysLeft} día${access.daysLeft === 1 ? "" : "s"} restante${access.daysLeft === 1 ? "" : "s"}`
         : access.tier === "anon-trial"
-          ? `🎁 Prueba gratuita · ${access.daysLeft} días restantes`
+          ? `Prueba gratuita · ${access.daysLeft} días restantes`
           : access.tier === "dev-open"
             ? "Modo desarrollo"
             : "Acceso expirado";
@@ -108,11 +109,8 @@ export default async function ProfilePage() {
   const initial = (displayName || user.email || "?").charAt(0);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-silver-100">Mi perfil</h1>
-      <p className="mt-1 text-sm text-silver-500">
-        Ajustes de tu cuenta, seguridad e historial de análisis.
-      </p>
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+      <PageHeading eyebrow="Área personal" title="Mi perfil" icon="shield" description={<>Gestiona tu cuenta, seguridad, preferencias e historial de análisis desde un solo lugar.</>} />
 
       {migrationPending && (
         <div className="mt-6 rounded-xl border border-warn-500/40 bg-warn-500/10 p-4 text-sm text-warn-400">
@@ -189,7 +187,7 @@ export default async function ProfilePage() {
 
       {/* ── Historial ── */}
       <section className="mt-8">
-        <h2 className="mb-4 text-lg font-bold text-silver-200">📜 Mis análisis recientes</h2>
+        <h2 className="mb-4 flex items-center gap-2.5 text-lg font-bold text-silver-200"><InterfaceIcon name="chart" className="h-5 w-5 text-brand-400" />Mis análisis recientes</h2>
         <div className="card-surface overflow-x-auto">
           <table className="w-full min-w-120 text-left text-sm">
             <thead>

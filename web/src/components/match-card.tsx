@@ -40,7 +40,7 @@ export function MatchCard({ match, prediction }: { match: Match; prediction?: Pr
   return (
     <Link
       href={`/partido/${match.id}`}
-      className={`card-surface group block p-4 transition-all hover:-translate-y-0.5 hover:border-brand-500/50 ${
+      className={`card-surface interactive-card group block p-4 ${
         isLive ? "border-brand-500/30" : ""
       }`}
     >

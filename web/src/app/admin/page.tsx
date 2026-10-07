@@ -111,7 +111,7 @@ export default async function AdminPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-silver-100">📊 Dashboard PLAYWIN</h1>
+      <h1 className="text-2xl font-bold text-silver-100">📊 Dashboard PickVerde</h1>
       <p className="mt-1 text-sm text-silver-500">
         Uso real del servicio: solo cuentan los clics en escanear / pronóstico, no las visitas.
       </p>

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth-form";
+import { AuthShell } from "@/components/auth-shell";
 
-export const metadata: Metadata = { title: "Iniciar sesión" };
+export const metadata: Metadata = { title: "Acceder" };
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-[70vh] items-center px-4 py-16">
+    <AuthShell>
       <AuthForm mode="login" />
-    </div>
+    </AuthShell>
   );
 }

@@ -1,0 +1,30 @@
+﻿import { chromium } from 'playwright';
+import { mkdirSync } from 'node:fs';
+mkdirSync('.screenshots', { recursive: true });
+const browser = await chromium.launch({ channel: 'msedge', headless: true });
+for (const width of [1440, 390]) {
+ const page = await browser.newPage({ viewport: { width, height: 1050 }, reducedMotion: 'reduce' });
+ const errors = []; page.on('pageerror', e => errors.push(e.message));
+ await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded', timeout: 120000 });
+ const chart = page.locator('.pv-chart3d'); await chart.waitFor();
+ await page.locator('.pv-results').scrollIntoViewIfNeeded();
+ await page.screenshot({ path: `.screenshots/results-3d-${width}.png`, animations: 'disabled' });
+ await chart.getByRole('button', { name: '30 días' }).click();
+ if (await chart.locator('.pv-day-column').count() !== 30) throw Error('Expected 30 daily columns');
+ await chart.getByRole('button', { name: '14 días' }).click();
+ if (await chart.locator('.pv-day-column').count() !== 14) throw Error('Expected 14 daily columns');
+ const failures = chart.getByRole('button', { name: /Fallados/ });
+ await failures.click();
+ if (await chart.locator('.pv-column-lost').count()) throw Error('Loss filter did not hide loss segments');
+ await failures.click();
+ const bar = chart.locator('.pv-day-column').last();
+ await bar.focus(); await page.keyboard.press('Enter');
+ if (!(await chart.locator('.pv-chart-detail').innerText()).includes('liquidados')) throw Error('Missing day detail');
+ await chart.scrollIntoViewIfNeeded();
+ await page.screenshot({ path: `.screenshots/chart-3d-${width}.png`, animations: 'disabled' });
+ const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
+ if (overflow > 1 || errors.length) throw Error(JSON.stringify({ overflow, errors }));
+ console.log(JSON.stringify({ width, overflow, errors, periodSwitch: 'passed', filter: 'passed', keyboard: 'passed' }));
+ await page.close();
+}
+await browser.close();
